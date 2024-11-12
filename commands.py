@@ -8,7 +8,9 @@ class Crypto():
         self.f = Fernet(self.key)
     
     def encrypt(self, text):
+        text = text.encode()
         return self.f.encrypt(text)
     
     def decrypt(self, token):
+        token = token.encode()
         return self.f.decrypt(token)
