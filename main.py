@@ -1,5 +1,5 @@
-from gui import Gui
+from gui import MainWindow
 
-gui = Gui()
+gui = MainWindow()
 
 gui.mainloop()

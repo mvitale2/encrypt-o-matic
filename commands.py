@@ -4,8 +4,12 @@ from cryptography.fernet import Fernet
 
 class Crypto():
     def __init__(self):
-        self.key = Fernet.generate_key()
-        self.f = Fernet(self.key)
+        self.fkey = Fernet.generate_key()
+        self.f = Fernet(self.fkey)
+    
+    def new_fernet_key(self):
+        self.fkey = Fernet.generate_key()
+        return self.fkey
     
     def encrypt(self, text):
         text = text.encode()
