@@ -1,5 +1,7 @@
 import customtkinter as ctk
 from commands import Crypto
+from os import getcwd
+from os.path import join
 
 class MainWindow(ctk.CTk):
     def __init__(self):
@@ -8,7 +10,7 @@ class MainWindow(ctk.CTk):
         self.title("Encrypt-o-matic")
         self.fernet_window = None
         # dev mode for automatically opening windows
-        self.auto_start = True
+        self.auto_start = False
 
         if self.auto_start:
             self.open_fernet()
@@ -56,22 +58,28 @@ class FernetWindow(ctk.CTkToplevel):
         self.copy_key_button.grid(row=2, column=1)
 
         self.custom_key_btn = ctk.CTkButton(self, text="Enter a key", command=self.custom_key_callback)
-        self.custom_key_btn.grid(row=2, column=3)
+        self.custom_key_btn.grid(row=3, column=0, columnspan=2, pady=(0,10))
+
+        self.encrypt_file_btn = ctk.CTkButton(self, text="Encrypt file", command=self.e_file_callback)
+        self.encrypt_file_btn.grid(row=4, column=0)
+
+        self.decrypt_file_btn = ctk.CTkButton(self, text="Decrypt file", command=self.d_file_callback)
+        self.decrypt_file_btn.grid(row=4, column=1)
 
         self.encrypt_entry = ctk.CTkEntry(self, placeholder_text="message")
-        self.encrypt_entry.grid(row=3, column=0, columnspan=2)
+        self.encrypt_entry.grid(row=5, column=0, columnspan=2)
 
         self.encrypt_btn = ctk.CTkButton(self, text="Encrypt", command=self.encrypt_callback)
-        self.encrypt_btn.grid(row=4, column=0, columnspan=2, pady=10)
+        self.encrypt_btn.grid(row=6, column=0, columnspan=2, pady=10)
 
         self.decrypt_entry = ctk.CTkEntry(self, placeholder_text="token")
-        self.decrypt_entry.grid(row=5, column=0, columnspan=2)
+        self.decrypt_entry.grid(row=7, column=0, columnspan=2)
 
         self.decrypt_button = ctk.CTkButton(self, text="Decrypt", command=self.decrypt_callback)
-        self.decrypt_button.grid(row=6, column=0, columnspan=2, pady=10)
+        self.decrypt_button.grid(row=8, column=0, columnspan=2, pady=10)
 
         self.result_label = ctk.CTkLabel(self, text=None, width=20, height=20)
-        self.result_label.grid(row=7, column=0, columnspan=2)
+        self.result_label.grid(row=9, column=0, columnspan=2)
     
     def hide_event(self):
         if self.key_toggle.get() == False:
@@ -93,6 +101,26 @@ class FernetWindow(ctk.CTkToplevel):
                 self.clipboard_append(f"Result: {self.ciphertext.decode()}")
         else:
             self.result_label.configure(text="Invalid entry")
+    
+    def e_file_callback(self):
+        file = ctk.filedialog.askopenfilename()
+        # Check for cancellation
+        if file != "":
+            dialog = ctk.CTkInputDialog(text=f"Enter a name for the encrypted file.\nMake sure you've used the correct key!\nEncrypted files are saved to {join(getcwd(), "output\\")}", title="New File Name")
+            name = dialog.get_input()
+            # Check for cancellation
+            if name != None:
+                self.crypto.encrypt_file(file, name)
+
+    def d_file_callback(self):
+        file = ctk.filedialog.askopenfilename()
+        # Check for cancellation
+        if file != "":
+            dialog = ctk.CTkInputDialog(text=f"Enter a name for the decrypted file.\nMake sure you've used the correct key!\nEncrypted files are saved to {join(getcwd(), "output\\")}", title="New File Name")
+            name = dialog.get_input()
+            # Check for cancellation
+            if name != None:
+                self.crypto.decrypt_file(file, name)
     
     def decrypt_callback(self):
         entry = self.decrypt_entry.get()
@@ -120,6 +148,7 @@ class FernetWindow(ctk.CTkToplevel):
         dialog = ctk.CTkInputDialog(text="Enter a Fernet key", title="Custom Key")
         input = dialog.get_input()
         if input != None:
+            self.crypto.key = input
             self.key = input
             self.key_label.configure(text=self.key)
 
