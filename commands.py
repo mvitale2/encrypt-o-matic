@@ -19,21 +19,21 @@ class FernetEncryption:
         token = token.encode()
         return self.f.decrypt(token)
     
-    def encrypt_file(self, text, name):
-        with open(text, "w+") as file:
-            plaintext = file.read()
-            ciphertext = self.encrypt(plaintext)
-            with open(f".\\output\\{name}.txt", "w") as modified_file:
-                modified_file.write(ciphertext.decode())
+    # def encrypt_file(self, text, name):
+    #     with open(text, "w+") as file:
+    #         plaintext = file.read()
+    #         ciphertext = self.encrypt(plaintext)
+    #         with open(f".\\output\\{name}.txt", "w") as modified_file:
+    #             modified_file.write(ciphertext.decode())
     
-    def decrypt_file(self, ciphertext, name):
-        with open(ciphertext, "r") as file:
-            target = file.readline()
-            print(target)
-            plaintext = self.decrypt(target)
-            print(plaintext.decode())
-            with open(f".\\output\\{name}.txt", "w") as new_file:
-                new_file.write(plaintext.decode())
+    # def decrypt_file(self, ciphertext, name):
+    #     with open(ciphertext, "r") as file:
+    #         target = file.readline()
+    #         print(target)
+    #         plaintext = self.decrypt(target)
+    #         print(plaintext.decode())
+    #         with open(f".\\output\\{name}.txt", "w") as new_file:
+    #             new_file.write(plaintext.decode())
 
 class DoubleIndexCaesarCipher:
     def double_index_caesar_cipher(self, text):

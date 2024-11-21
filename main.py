@@ -1,4 +1,4 @@
-from gui import MainWindow
+from windows import MainWindow
 
 gui = MainWindow()
 

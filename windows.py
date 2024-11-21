@@ -1,7 +1,7 @@
 import customtkinter as ctk
 from commands import FernetEncryption, DoubleIndexCaesarCipher
-from os import getcwd
-from os.path import join
+# from os import getcwd
+# from os.path import join
 
 class MainWindow(ctk.CTk):
     def __init__(self):
@@ -11,7 +11,7 @@ class MainWindow(ctk.CTk):
         self.fernet_window = None
         self.doubling_window = None
         # dev mode for automatically opening windows
-        self.auto_start = True
+        self.auto_start = False
 
         if self.auto_start:
             self.open_doubling()
@@ -41,23 +41,20 @@ class MainWindow(ctk.CTk):
 class FernetWindow(ctk.CTkToplevel):
     def __init__(self):
         super().__init__()
-        self.geometry("305x400")
+        self.geometry("400x800")
         self.title("Encrypt-o-matic")
         self.crypto = FernetEncryption()
-        self.copy = ctk.BooleanVar()
         self.hide_key = ctk.BooleanVar()
         self.ciphertext = None
         self.plaintext = None
         self.key = self.crypto.fkey
 
         # elements
-        self.copy_toggle = ctk.CTkCheckBox(self, text="Copy results?", variable=self.copy, onvalue=False, offvalue=True)
-        self.copy_toggle.grid(row=0, column=0)
-
+        # add encrypt/decrypt toggle
         self.key_toggle = ctk.CTkCheckBox(self, text="Hide Key?", command=self.hide_event, variable=self.hide_key, onvalue=False, offvalue=True)
-        self.key_toggle.grid(row=0, column=1)
+        self.key_toggle.grid(row=0, column=0, columnspan=2)
 
-        self.key_label = ctk.CTkLabel(self, text="")
+        self.key_label = ctk.CTkTextbox(self, state="disabled", width=350, height=50)
         self.key_label.grid(row=1, column=0, columnspan=2)
 
         self.generate_key_btn = ctk.CTkButton(self, text="Generate new key", command=self.key_callback)
@@ -69,85 +66,92 @@ class FernetWindow(ctk.CTkToplevel):
         self.custom_key_btn = ctk.CTkButton(self, text="Enter a key", command=self.custom_key_callback)
         self.custom_key_btn.grid(row=3, column=0, columnspan=2, pady=(0,10))
 
-        self.encrypt_file_btn = ctk.CTkButton(self, text="Encrypt file", command=self.e_file_callback)
-        self.encrypt_file_btn.grid(row=4, column=0)
+        # self.encrypt_file_btn = ctk.CTkButton(self, text="Encrypt file", command=self.e_file_callback)
+        # self.encrypt_file_btn.grid(row=4, column=0)
 
-        self.decrypt_file_btn = ctk.CTkButton(self, text="Decrypt file", command=self.d_file_callback)
-        self.decrypt_file_btn.grid(row=4, column=1)
+        # self.decrypt_file_btn = ctk.CTkButton(self, text="Decrypt file", command=self.d_file_callback)
+        # self.decrypt_file_btn.grid(row=4, column=1)
 
-        self.encrypt_entry = ctk.CTkEntry(self, placeholder_text="message")
-        self.encrypt_entry.grid(row=5, column=0, columnspan=2)
+        self.encrypt_entry = ctk.CTkTextbox(self, width=300, height=200)
+        self.encrypt_entry.grid(row=5, column=0, columnspan=2, pady=(10,0))
 
         self.encrypt_btn = ctk.CTkButton(self, text="Encrypt", command=self.encrypt_callback)
         self.encrypt_btn.grid(row=6, column=0, columnspan=2, pady=10)
 
-        self.decrypt_entry = ctk.CTkEntry(self, placeholder_text="token")
+        self.decrypt_entry = ctk.CTkTextbox(self, width=300, height=200)
         self.decrypt_entry.grid(row=7, column=0, columnspan=2)
 
         self.decrypt_button = ctk.CTkButton(self, text="Decrypt", command=self.decrypt_callback)
         self.decrypt_button.grid(row=8, column=0, columnspan=2, pady=10)
 
-        self.result_label = ctk.CTkLabel(self, text=None, width=20, height=20)
-        self.result_label.grid(row=9, column=0, columnspan=2)
+        self.result_title = ctk.CTkLabel(self, text="Result")
+        self.result_title.grid(row=9, column=0, columnspan=2, pady=10)
+
+        self.result_label = ctk.CTkTextbox(self, width=250, height=150)
+        self.result_label.grid(row=10, column=0, columnspan=2)
     
-    def hide_event(self):
-        if self.key_toggle.get() == False:
-            self.key_label.configure(text="")
-        else:
-            self.key_label.configure(text=self.key)
-    
-    # add method that truncates output and shows a button to export output to .txt file
-    # alternatively make the gui element bigger and capable of wrapping the output
     def encrypt_callback(self):
         entry = self.encrypt_entry.get()
         self.ciphertext = None
         self.plaintext = None
         if entry != "":
             self.ciphertext = self.crypto.encrypt(entry)
-            self.result_label.configure(text=self.ciphertext.decode())
-            if self.copy == True:
-                self.clipboard_clear()
-                self.clipboard_append(f"Result: {self.ciphertext.decode()}")
+            self.result_label.delete(index1="0.0", index2="end")
+            self.result_label.insert(index="0.0", text=self.ciphertext.decode())
         else:
-            self.result_label.configure(text="Invalid entry")
-    
-    def e_file_callback(self):
-        file = ctk.filedialog.askopenfilename()
-        # Check for cancellation
-        if file != "":
-            dialog = ctk.CTkInputDialog(text=f"Enter a name for the encrypted file.\nMake sure you've used the correct key!\nEncrypted files are saved to {join(getcwd(), "output\\")}", title="New File Name")
-            name = dialog.get_input()
-            # Check for cancellation
-            if name != None:
-                self.crypto.encrypt_file(file, name)
+            self.result_label.delete(index1="0.0", index2="end")
+            self.result_label.insert(index="0.0",text="Invalid entry")
 
-    def d_file_callback(self):
-        file = ctk.filedialog.askopenfilename()
-        # Check for cancellation
-        if file != "":
-            dialog = ctk.CTkInputDialog(text=f"Enter a name for the decrypted file.\nMake sure you've used the correct key!\nEncrypted files are saved to {join(getcwd(), "output\\")}", title="New File Name")
-            name = dialog.get_input()
-            # Check for cancellation
-            if name != None:
-                self.crypto.decrypt_file(file, name)
-    
     def decrypt_callback(self):
         entry = self.decrypt_entry.get()
         if entry != None:
             try:
                 self.plaintext = self.crypto.decrypt(entry)
-                self.result_label.configure(text=f"Result: {self.plaintext.decode()}")
-                if self.copy == True:
-                    self.clipboard_clear()
-                    self.clipboard_append(self.plaintext.decode())
+                self.result_label.delete(index1="0.0", index2="end")
+                self.result_label.insert(index="0.0", text=self.plaintext.decode())
             except:
-                self.result_label.configure(text="Invalid entry.")
+                self.result_label.delete(index1="0.0", index2="end")
+                self.result_label.insert(index="0.0",text="Invalid entry")
         else:
-            self.result_label.configure(text="Invalid entry")
+            self.result_label.delete(index1="0.0", index2="end")
+            self.result_label.insert(index="0.0",text="Invalid entry")
+    
+    # def e_file_callback(self):
+    #     file = ctk.filedialog.askopenfilename()
+    #     # Check for cancellation
+    #     if file != "":
+    #         dialog = ctk.CTkInputDialog(text=f"Enter a name for the encrypted file.\nMake sure you've used the correct key!\nEncrypted files are saved to {join(getcwd(), "output\\")}", title="New File Name")
+    #         name = dialog.get_input()
+    #         # Check for cancellation
+    #         if name != None:
+    #             self.crypto.encrypt_file(file, name)
+
+    # def d_file_callback(self):
+    #     file = ctk.filedialog.askopenfilename()
+    #     # Check for cancellation
+    #     if file != "":
+    #         dialog = ctk.CTkInputDialog(text=f"Enter a name for the decrypted file.\nMake sure you've used the correct key!\nEncrypted files are saved to {join(getcwd(), "output\\")}", title="New File Name")
+    #         name = dialog.get_input()
+    #         # Check for cancellation
+    #         if name != None:
+    #             self.crypto.decrypt_file(file, name)
+    
+    def hide_event(self):
+        self.key_label.configure(state="normal")
+        if self.key_toggle.get() == False:
+            self.key_label.delete(index1="0.0", index2="end")
+        else:
+            self.key_label.insert(index="0.0", text=self.key)
+        self.key_label.configure(state="disabled")
     
     def key_callback(self):
         self.key = self.crypto.new_fernet_key()
-        self.key_label.configure(text=self.key)
+        if self.hide_key.get() == True:
+            # Only shows the new key if the label is not hidden
+            self.key_label.configure(state="normal")
+            self.key_label.delete(index1="0.0", index2="end")
+            self.key_label.insert(index="0.0", text=self.key)
+            self.key_label.configure(state="disabled")
     
     def key_copy_callback(self):
         self.clipboard_clear()
@@ -159,7 +163,11 @@ class FernetWindow(ctk.CTkToplevel):
         if input != None:
             self.crypto.key = input
             self.key = input
-            self.key_label.configure(text=self.key)
+            if self.hide_key.get() == False:
+                self.key_label.configure(state="normal")
+                self.key_label.delete(index1="0.0", index2="end")
+                self.key_label.insert(index="0.0", text=self.key)
+                self.key_label.configure(state="disabled")
 
 class DoublingWindow(ctk.CTkToplevel):
     def __init__(self):
