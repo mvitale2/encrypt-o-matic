@@ -2,6 +2,7 @@ from cryptography.fernet import Fernet
 
 class FernetEncryption:
     # https://www.comparitech.com/blog/information-security/what-is-fernet/
+    # A simple algorithm that works out of the box in python, no self-written logic necessary
 
     def __init__(self):
         self.fkey = Fernet.generate_key()
@@ -19,6 +20,7 @@ class FernetEncryption:
         token = token.encode()
         return self.f.decrypt(token)
     
+    # Commented because it wasn't working properly
     # def encrypt_file(self, text, name):
     #     with open(text, "w+") as file:
     #         plaintext = file.read()
@@ -35,8 +37,12 @@ class FernetEncryption:
     #         with open(f".\\output\\{name}.txt", "w") as new_file:
     #             new_file.write(plaintext.decode())
 
-class DoubleIndexCaesarCipher:
-    def double_index_caesar_cipher(self, text):
+class DoubleIndexSubstitutionCipher:
+    def double_index_sub_cipher(self, text):
+        """
+        A substitution cipher that replaces each letter's alphabetical index with the index plus the index multiplied by 2. 
+        For example, a becomes c because 1 x 2 = 2 + 1 = 3.  
+        """
         def shift_char(c):
             if c.isalpha():  # Check if character is a letter
                 is_upper = c.isupper()
@@ -56,16 +62,40 @@ class DoubleIndexCaesarCipher:
         # Apply the shift_char function to each character in the input text
         return ''.join(shift_char(c) for c in text)
 
-    # def decrypt_double_index(self, ciphertext):
-    #     def un_shift_char(c):
-    #         if c.isalpha():
-    #             is_upper = c.isupper()
-    #             alphabet_start = ord("A") if is_upper else ord('a')
-    #             encrypted_index = ord(c) - alphabet_start
-    #             for original_index in range(26):
-    #                 if (original_index * 2) % 26 == encrypted_index:
-    #                     return chr(alphabet_start + original_index)
-    #             return c
-    #         else:
-    #             return c # non-alphanumeric characters are ignored
-    #     return ''.join(un_shift_char(c) for c in ciphertext)
+class VigenereCipher:
+    def __init__(self, key):
+        self.key = key
+    
+    def vigenere_cipher(self, text, mode):
+        """
+        Encrypts or decrypts text using the Vigenere cipher. The key attribute is used to encrypt or decrypt the text. 
+
+        Args:
+        text: The text to encrypt or decrypt.
+        mode: 'encrypt' or 'decrypt'.
+
+        Returns:
+        The encrypted or decrypted text.
+        """
+
+        result = ''
+        key_index = 0
+        key = self.key.upper()
+
+        for char in text:
+            if char.isalpha():
+                shift = ord(key[key_index % len(key)]) - ord('A')
+                if mode == 'decrypt':
+                    shift = -shift
+
+                shifted_char = chr(((ord(char.upper()) - ord('A') + shift) % 26) + ord('A'))
+
+                if char.islower():
+                    shifted_char = shifted_char.lower()
+
+                result += shifted_char
+                key_index += 1
+            else:
+                result += char
+
+        return result
