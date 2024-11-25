@@ -5,12 +5,12 @@ class FernetEncryption:
     # A simple algorithm that works out of the box in python, no self-written logic necessary
 
     def __init__(self):
-        self.fkey = Fernet.generate_key()
-        self.f = Fernet(self.fkey)
+        self.key = self.new_key()
+        self.f = Fernet(self.key)
     
-    def new_fernet_key(self):
-        self.fkey = Fernet.generate_key()
-        return self.fkey
+    def new_key(self):
+        key = Fernet.generate_key()
+        return key
     
     def encrypt(self, text):
         text = text.encode()
